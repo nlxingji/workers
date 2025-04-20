@@ -8,10 +8,12 @@ def query_itunes_cover(artist=None, album=None, title=None):
         return None
 
     term = f"{artist} {album or ''} {title or ''}".strip().replace(" ", "+")
-    url = f"https://itunes.apple.com/search?term={term}&entity=album&limit=1"
+    url = f"https://itunes.apple.com/search?term={term}&entity=song&limit=1"
     r = requests.get(url)
     if r.status_code != 200:
         return None
+
+
 
     data = r.json()
     if data.get("resultCount", 0) > 0:
