@@ -1,0 +1,8 @@
+version: "3.8"
+
+services:
+  cover-api:
+    build: .
+    ports:
+      - "5678:5678"
+    restart: always
