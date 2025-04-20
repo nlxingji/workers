@@ -13,8 +13,6 @@ def query_itunes_cover(artist=None, album=None, title=None):
     if r.status_code != 200:
         return None
 
-
-
     data = r.json()
     if data.get("resultCount", 0) > 0:
         artwork = data["results"][0].get("artworkUrl100")
@@ -33,7 +31,10 @@ def get_cover():
 
     cover_url = query_itunes_cover(artist, album, title)
     if not cover_url:
-        return Response("Not found", status=404)
+        cover_url = query_itunes_cover(artist, None, None)
+        if not cover_url:
+            return Response("Not found", status=404)
+
 
     # 请求封面图
     img_resp = requests.get(cover_url, stream=True)
