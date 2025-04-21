@@ -3,7 +3,6 @@ import re
 import subprocess
 import requests
 from mutagen.flac import FLAC, Picture
-from bs4 import BeautifulSoup
 
 def safe_decode(b):
     if isinstance(b, str):
