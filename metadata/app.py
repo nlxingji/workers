@@ -91,12 +91,18 @@ def embed_cover(flac_path, artist, title):
         if os.path.exists(cover_file):
             _embed_picture(flac_path, cover_file)
             return
-    query = f"{artist} {title}"
-    url = f"https://itunes.apple.com/search?term={requests.utils.quote(query)}&media=music&limit=1"
+    query = f"{artist} {title or ''}".strip().replace(" ", "+")
+    url = f"https://itunes.apple.com/search?term={query}&entity=song&limit=1"
     try:
         r = requests.get(url)
         data = r.json()
         if data['resultCount']:
+
+            album = data['results'][0]['collectionName']
+            audio = FLAC(flac_path)
+            audio['album'] = album
+            audio.save()
+
             img_url = data['results'][0]['artworkUrl100'].replace('100x100', '600x600')
             img_data = requests.get(img_url).content
             with open("temp_cover.jpg", 'wb') as f:
