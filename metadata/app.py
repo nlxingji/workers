@@ -143,6 +143,7 @@ def process_audio(filepath):
         artist = guess_artist
         title = guess_title
         embed_tags(flac_path, artist, title)
+        embed_cover(flac_path, artist, title)
         print(f"[~] 标签已补全: {artist} - {title}")
 
 def main():
