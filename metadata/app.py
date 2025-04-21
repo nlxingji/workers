@@ -139,13 +139,11 @@ def process_audio(filepath):
             title = title or guess_title
             embed_tags(flac_path, artist, title)
             print(f"[~] 标签已补全: {artist} - {title}")
-        embed_lyrics(flac_path, artist, title)
-        embed_cover(flac_path, artist, title)
         print(f"[✓] FLAC 补全完成: {flac_path}\n")
 
 def main():
     # 你可以在这里指定一个额外的目录列表
-    dirs_to_scan = ["./"]  # 这里替换成你需要的目录
+    dirs_to_scan = ["./","/vol2/1000/download"]  # 这里替换成你需要的目录
     for dir_path in dirs_to_scan:
         for root, _, files in os.walk(dir_path):
             for name in files:
