@@ -1,4 +1,5 @@
 import os
+import re
 import subprocess
 import requests
 from mutagen.flac import FLAC, Picture
@@ -16,12 +17,14 @@ def safe_decode(b):
 
 def fallback_title_artist(filename):
     base = os.path.splitext(os.path.basename(filename))[0]
-    if " - " in base:
-        artist, title = base.split(" - ", 1)
-    elif "-" in base:
-        artist, title = base.split("-", 1)
+
+    # 支持多种分隔符：半角 - 、全角－、中文—
+    match = re.split(r'\s*[-－—–]\s*', base, maxsplit=1)
+    if len(match) == 2:
+        artist, title = match
     else:
         artist, title = "", base
+
     return artist.strip(), title.strip()
 
 def convert_to_flac(wav_path, flac_path):
@@ -131,15 +134,11 @@ def process_audio(filepath):
     elif ext == ".flac":
         flac_path = filepath
         audio = FLAC(flac_path)
-        artist = audio.get("artist", [""])[0]
-        title = audio.get("title", [""])[0]
-        if not artist or not title:
-            guess_artist, guess_title = fallback_title_artist(flac_path)
-            artist = artist or guess_artist
-            title = title or guess_title
-            embed_tags(flac_path, artist, title)
-            print(f"[~] 标签已补全: {artist} - {title}")
-        print(f"[✓] FLAC 补全完成: {flac_path}\n")
+        guess_artist, guess_title = fallback_title_artist(flac_path)
+        artist = guess_artist
+        title = guess_title
+        embed_tags(flac_path, artist, title)
+        print(f"[~] 标签已补全: {artist} - {title}")
 
 def main():
     # 你可以在这里指定一个额外的目录列表
