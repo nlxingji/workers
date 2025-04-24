@@ -1,0 +1,79 @@
+version: "3.8"
+
+services:
+  navidrome:
+    image: deluan/navidrome:latest
+    container_name: NaviDrome
+    ports:
+      - "4533:4533" # 主机端口:容器端口
+    restart: always
+    environment:
+      # 基本配置
+      ND_LOGLEVEL: info # 日志级别：debug, info, warn, error
+      ND_SCANSCHEDULE: 1h # 音乐库扫描间隔，格式如 1h, 30m
+      ND_BASEURL: "" # 如果使用反向代理，设置为子路径，如 /navidrome
+      ND_PORT: 4533 # 容器内监听端口，通常与 ports 配置一致
+      ND_ENABLETRANSCODINGCONFIG: "true" # 启用转码配置
+      ND_TRANSCODINGCACHESIZE: "150MiB" # 转码缓存大小，0 表示
+      ND_ENABLEINSIGHTSCOLLECTOR: "false" # 禁用匿名使用数据收集
+
+      # Spotify 元数据集成（需要注册 Spotify Developer 账号）
+      ND_SPOTIFY_ID: "b79ff6797aa944f39ffa8a9854e96f59"
+      ND_SPOTIFY_SECRET: "d9943b8ceac84693bf77a25a51f6c418"
+
+    volumes:
+      - "/vol1/1000/docker/navidrome/data:/data" # Navidrome 数据目录（数据库、缓存等）
+      - "/vol2/1000/music:/music:ro" # 音乐文件目录，ro 表示只读
+      - "/vol1/1000/docker/navidrome/navidrome.toml:/data/navidrome.toml:ro" # 可选：自定义配置文件
+    networks:
+      - navidrome-network
+
+
+  xiaomusic:
+    image: docker.hanxi.cc/hanxi/xiaomusic
+    container_name: XiaoMusic
+    ports:
+      - "58090:8090"
+    environment:
+      - XIAOMUSIC_PUBLIC_PORT=58090
+    volumes:
+      - /vol2/1000/music:/app/music
+      - /vol1/1000/docker/xiaomusic_conf:/app/conf
+    restart: always
+
+
+  music_tag_web:
+    image: xhongc/music_tag_web:latest
+    container_name: MusicTagWeb
+    ports:
+      - "8002:8002"
+    volumes:
+      - /vol2/1000/music:/app/media
+      - /vol2/1000/download:/app/download
+      - /vol1/1000/docker/musictag:/app/data
+    restart: always
+
+  home_assistant:
+    image: homeassistant/home-assistant:stable
+    container_name: home-assistant
+    network_mode: host
+    privileged: true
+    environment:
+      - TZ=Asia/Shanghai
+    volumes:
+      - /vol1/1000/docker/homeassistant:/config
+    restart: always
+
+  lrcapi:
+    image: hisatri/lrcapi:latest
+    container_name: lrcapi
+    ports:
+      - "28883:28883"
+    volumes:
+      - /vol2/1000/music:/music
+    restart: unless-stopped
+
+
+networks:
+  navidrome-network:
+    driver: bridge
